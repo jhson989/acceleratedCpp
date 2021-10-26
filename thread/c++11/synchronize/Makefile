@@ -1,9 +1,9 @@
 CC = g++
-INCS = 
+INCS = utils.hpp 
 OBJS = 
 MAIN = main.cpp 
 OPTION =  -O0 -lpthread
-PROGRAM = thread
+PROGRAM = reduction
 
 
 ${PROGRAM} : ${MAIN} ${OBJS} ${INCS} Makefile
