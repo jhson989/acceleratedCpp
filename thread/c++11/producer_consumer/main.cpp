@@ -14,6 +14,7 @@ const int num_consumers = 6;
 void func_producer (std::queue<std::string>* data, std::mutex* m, std::condition_variable* cv) {
     
     for (int i=0; i<num_data; i++) {
+
         // Produce a random string
         std::vector<char> rand_vec (50+std::rand()%50);
         std::generate (rand_vec.begin (), rand_vec.end (), [] () { 
@@ -21,7 +22,7 @@ void func_producer (std::queue<std::string>* data, std::mutex* m, std::condition
                 });
         std::string rand_str (rand_vec.begin (), rand_vec.end ());
 
-        // Issue
+        // Issue : lock-step
         {
             std::unique_lock<std::mutex> ulk (*m);
             data->push (rand_str);
@@ -33,17 +34,20 @@ void func_producer (std::queue<std::string>* data, std::mutex* m, std::condition
         std::this_thread::sleep_for(std::chrono::milliseconds(rand_str.length()));
     }
 
+    // End of the producer
     printf("Producer done...\n");
     cv->notify_all ();
 }
 
 void func_consumer (std::queue<std::string>* data, std::mutex* m, std::condition_variable* cv, int* num_processed) {
 
+    std::thread::id tid = std::this_thread::get_id();
+    int num_now = 0;
+    std::string content;
+
     while (*num_processed < num_data) {
     
-        int num_now = 0;
-        std::thread::id tid = std::this_thread::get_id();
-        std::string content;
+        // Consume : lock-step
         {
             std::unique_lock<std::mutex> ulk (*m);
             cv->wait (ulk, [&] {return !data->empty() || *num_processed == num_data;});
@@ -52,17 +56,15 @@ void func_consumer (std::queue<std::string>* data, std::mutex* m, std::condition
                 return;
             }
             
-            num_now = (*num_processed); 
-            (*num_processed)++;
+            num_now = (*num_processed)++; 
             content = data->front ();
             data->pop ();
         }
+
+        // Do work
         printf("Thread %x : process (%d)_(%s)\n", tid, num_now, content.c_str());
         std::this_thread::sleep_for(std::chrono::milliseconds(10*content.length()));
     }
-
-
-
 }
 
 
