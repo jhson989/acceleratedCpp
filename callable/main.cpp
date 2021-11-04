@@ -63,7 +63,12 @@ int main (void) {
     callable_class a;
     std::vector<int> arg (5, 2);
         
-    std::cout << std::endl << "============= std::unction" <<std::endl;
+
+    std::cout << std::endl << "============= function pointer" <<std::endl;    
+    int (*p1) (const std::vector<int>& a) = callable_func;
+    p1 (arg);
+
+    std::cout << std::endl << "============= std::function" <<std::endl;
 
     // std::function : a object for callable objects
     std::function<int (const std::vector<int>&)> f1 = callable_func;
