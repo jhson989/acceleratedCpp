@@ -1,5 +1,7 @@
-#include "Vector.hpp"
+
 #include <iostream>
+
+#include "Vector.hpp"
 
 
 int main(void) {
