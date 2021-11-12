@@ -13,6 +13,7 @@ void test_vector () {
 
     // Define a vector
     Vec<int> a;
+    a.reserve (3);
 
     // push_back
     for (Vec<int>::size_type i=0; i<10; i++)
@@ -41,6 +42,12 @@ void test_vector () {
         print (a);
     }
     a.push_back (10);
+    a.push_back (11);
+    a.push_back (12);
+    a.push_back (13);
+    a.push_back (14);
+    print (a);
+    a.clear ();
     print (a);
 
     // erase test

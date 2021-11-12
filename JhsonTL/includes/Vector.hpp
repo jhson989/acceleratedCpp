@@ -51,7 +51,8 @@ public:
         return *this;
     }
 
-    // Manipulation operator
+    /*********************************************************************/
+    /* Data Manipulation Operator */
     void push_back (const_reference val) {
         if (avail == limit) {
             grow ();
@@ -73,7 +74,26 @@ public:
 
     }
 
-    // Utils
+    /*********************************************************************/
+    /* Memory Operator */
+    void reserve (const size_type n) {
+        if (limit-data >= n)
+            return
+        grow_to (n);
+    }
+
+    void clear () {
+        if (data) {
+            iterator it = avail;
+            while (it != data) {
+                alloc.destroy (--it);
+            }
+        }
+        avail = data;
+    }
+
+    /*********************************************************************/
+    /* Util Operator */
     void print () {
         for (iterator n=data; n<avail; n++)
             std::cout << *n << " ";
@@ -118,6 +138,18 @@ private:
     
     void grow () {
         size_type new_size = std::max (2*(limit-data), difference_type (1));
+
+        iterator new_data = alloc.allocate (new_size);
+        iterator new_avail = std::uninitialized_copy (data, avail, new_data);
+
+        uncreate ();
+    
+        data = new_data;
+        avail = new_avail;
+        limit = data + new_size;
+    }
+
+    void grow_to (const size_type new_size) {
 
         iterator new_data = alloc.allocate (new_size);
         iterator new_avail = std::uninitialized_copy (data, avail, new_data);
