@@ -56,8 +56,28 @@ public:
         if (avail == limit) {
             grow ();
         }
-
         unchecked_append (val);
+    }
+    void pop_back () {
+        unchecked_pop ();
+        if ((avail-data) == (limit-data)/2) {
+            cut ();
+        }   
+    }
+
+    void erase (const size_type at) {
+        unchecked_drop (data+at);
+        if ((avail-data) == (limit-data)/2) {
+            cut ();
+        }  
+
+    }
+
+    // Utils
+    void print () {
+        for (iterator n=data; n<avail; n++)
+            std::cout << *n << " ";
+        std::cout << std::endl;
     }
 
 
@@ -67,14 +87,14 @@ private:
     iterator limit;
     iterator avail;
 
-    std::allocator<T> alloc;
+    std::allocator<T> alloc; // uninitialized memory allocation
 
     void create () {
         data = limit = avail = 0;
     }
     
     void create (size_type n, const_reference val) {
-        data = alloc.allocate (n);
+        data = alloc.allocate (n); 
         limit = avail = data + n;
         std::uninitialized_fill (data, limit, val);
     }
@@ -95,10 +115,11 @@ private:
         data = limit = avail = 0;
     }
 
+    
     void grow () {
         size_type new_size = std::max (2*(limit-data), difference_type (1));
 
-        iterator new_data = alloc.allocate(new_size);
+        iterator new_data = alloc.allocate (new_size);
         iterator new_avail = std::uninitialized_copy (data, avail, new_data);
 
         uncreate ();
@@ -108,10 +129,36 @@ private:
         limit = data + new_size;
     }
 
+    void cut () {
+        size_type new_size = avail - data;
+
+        if (new_size == difference_type (0)) {
+            uncreate ();
+            return;
+        }  
+        iterator new_data = alloc.allocate (new_size);
+        iterator new_avail = std::uninitialized_copy (data, avail, new_data);
+        data = new_data;
+        avail = new_avail;
+        limit = data + new_size;
+    }
+
+
     void unchecked_append (const_reference val) {
         alloc.construct (avail++, val);
     }
 
+    void unchecked_pop () {
+        alloc.destroy (avail--);
+    }
+
+    void unchecked_drop (iterator at) {
+
+        for (iterator n=at+1; n<avail; n++)
+            *(n-1) = *n;
+
+        alloc.destroy (avail--);
+    }
 };
 
 #endif
